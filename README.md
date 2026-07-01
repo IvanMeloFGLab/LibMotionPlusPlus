@@ -1,482 +1,210 @@
-# Wiimote Linux Research Notes
-**Project:** Native Linux Wiimote Integration Daemon (C++)
-**Status:** Initial hardware investigation completed
+# MotionPlusPlus
 
----
+> A modern C++ daemon for turning motion controllers into powerful, customizable input devices on Linux.
 
-# Goal
+MotionPlusPlus is an open-source project focused on bringing advanced support for motion-based controllers such as the Nintendo Wii Remote, Wii MotionPlus, Sony PS Move, and future devices to Linux.
 
-Develop a native Linux daemon that turns the Nintendo Wii Remote into a first-class Linux input device capable of:
+Unlike simple mouse emulation tools, MotionPlusPlus is designed as a modular controller framework capable of reading raw controller data and mapping it to configurable actions. The long-term goal is to provide a flexible foundation for desktop interaction, gaming, accessibility, automation, and experimentation.
 
-- Desktop mouse
-- Keyboard shortcuts
-- Steam/Game Mode navigation
-- Gesture recognition
-- Custom actions
-- Automatic profile switching
-- Dolphin compatibility
+## Project Goals
 
-Target platforms:
+* Modern C++20 codebase
+* Modular and extensible architecture
+* Native Linux support
+* Low-latency input processing
+* Configurable action system
+* Support for multiple controller families
+* Clean separation between hardware, controller logic, and actions
 
-- Ubuntu (development)
-- Bazzite
-- SteamOS
-- ChimeraOS
+## Planned Controller Support
 
----
+* Nintendo Wii Remote
+* Wii MotionPlus
+* Wii Nunchuk
+* Wii Classic Controller
+* Wii Balance Board
+* Sony PS Move
+* DualSense (selected motion features)
+* Additional HID motion controllers in the future
 
-# Initial Hardware
+## Planned Features
 
-Tested device:
+### Input
 
-- Original Nintendo Wii Remote (RVL-CNT-01)
-- Official MotionPlus accessory attached
+* Button mapping
+* Mouse emulation
+* Keyboard emulation
+* Scroll emulation
+* Gamepad emulation
+* Gesture recognition
+* Motion-based actions
+* Controller profiles
+* Multi-controller support
 
-Connected through Bluetooth.
+### Controller Features
 
----
+* MotionPlus support
+* Accelerometer support
+* IR camera support
+* Nunchuk support
+* Extension detection
+* LEDs
+* Rumble
+* Battery monitoring
+* Speaker support (where available)
 
-# Kernel Support
+### System Integration
 
-Linux automatically loads:
+* User-defined actions
+* Launch applications
+* Media controls
+* Volume and brightness control
+* Desktop shortcuts
+* Sleep, suspend, and power actions
+* Profile switching
+
+Example ideas:
+
+* Press the Wii Power button to suspend the computer.
+* Hold B to enable mouse mode.
+* Shake the controller to trigger a shortcut.
+* Point at the sensor bar to control the cursor.
+* Use controller orientation to scroll or switch desktops.
+
+## Architecture
+
+The project is intentionally built in layers.
 
 ```text
-hid_wiimote
-```
+Linux Input Devices (/dev/input/event*)
 
-Kernel modules loaded:
+        │
 
-```text
-hid_wiimote
-ff_memless
-hid
-```
+        ▼
 
-No external Wiimote library was required for basic functionality.
+DeviceManager
+    Device discovery
+    Metadata collection
 
----
+        │
 
-# Device Enumeration
+        ▼
 
-The Linux kernel exposes the Wiimote as **four separate evdev devices**.
+InputDevice
+    Metadata describing one Linux input device
 
-## event7
+        │
 
-```
-Nintendo Wii Remote Accelerometer
-```
+        ▼
 
-Capabilities
+DeviceConnection
+    Reads events through libevdev
+    Manages device lifetime (RAII)
 
-- Accelerometer X
-- Accelerometer Y
-- Accelerometer Z
+        │
 
-Axis:
+        ▼
 
-```
-ABS_RX
-ABS_RY
-ABS_RZ
-```
+Controller
+    Groups multiple input devices into one physical controller
 
-Range:
+        │
 
-```
--500 ... 500
-```
+        ▼
 
----
-
-## event8
-
-```
-Nintendo Wii Remote IR
-```
-
-Capabilities
-
-- IR Camera tracking
-
-Linux exposes four tracked IR points.
-
-Axes:
-
-```
-ABS_HAT0X
-ABS_HAT0Y
-
-ABS_HAT1X
-ABS_HAT1Y
-
-ABS_HAT2X
-ABS_HAT2Y
-
-ABS_HAT3X
-ABS_HAT3Y
-```
-
-Ranges:
-
-```
-X : 0 - 1023
-
-Y : 0 - 767
-```
-
-This corresponds to **up to four simultaneously tracked infrared blobs**.
-
-No camera image is exposed.
-
----
-
-## event9
-
-```
-Nintendo Wii Remote
-```
-
-Capabilities
-
-Buttons
-
-```
-D-Pad
-
-A
-B
-
-1
-2
-
-Home
-
-+
--
-```
-
-Linux exposes:
-
-```
-EV_KEY
-```
-
-Also exposes
-
-```
-EV_FF
-```
-
-meaning Force Feedback (rumble) is available through the Linux input subsystem.
-
-Handlers:
-
-```
-kbd
-event9
-js0
-```
-
-Meaning the Wiimote simultaneously behaves as
-
-- keyboard-like input
-- joystick
-- evdev input device
-
----
-
-## event10
-
-```
-Nintendo Wii Remote Motion Plus
-```
-
-Capabilities
-
-Gyroscope
-
-Axes:
-
-```
-ABS_RX
-ABS_RY
-ABS_RZ
-```
-
-Approximate range
-
-```
--16000 ... 16000
-```
-
----
-
-# IR Camera Findings
-
-Very important discovery.
-
-The Wiimote **does not transmit a camera image**.
-
-Instead it contains a PixArt IR camera that performs onboard image processing.
-
-The Wiimote only transmits:
-
-- up to four IR blobs
-- X coordinate
-- Y coordinate
-
-The image itself is inaccessible through Linux's hid_wiimote driver.
-
-Therefore
-
-```
-Camera image
-        ❌
-
-Tracked IR coordinates
-        ✔
-```
-
----
-
-# Current Linux Architecture
-
-```
-Bluetooth
-      │
-hid_wiimote (Kernel)
-      │
- ┌────┼────────┬────────┬────────┐
- │    │        │        │
- │    │        │        │
-IR  Buttons  Accel   Motion+
- │    │        │        │
-event8 event9 event7 event10
-```
-
----
-
-# Major Discovery
-
-The Linux kernel already separates every Wiimote subsystem.
-
-This means a custom daemon may only need:
-
-```
-libevdev
-```
-
-instead of a dedicated Wiimote library.
-
-This greatly simplifies the architecture.
-
----
-
-# Proposed Architecture
-
-```
-                WiimoteDaemon
-
-            Device Manager
-                   │
-        ┌──────────┼──────────┐
-        │          │          │
-     Buttons       IR     Motion
-        │          │          │
-        └──────────┼──────────┘
-                   │
-             Action Engine
-                   │
-      ┌────────────┼────────────┐
-      │            │            │
-   Mouse      Keyboard      Gamepad
-      │            │            │
-          libevdev/uinput
-                   │
-              Linux Desktop
-```
-
----
-
-# Planned Features
-
-## Input
-
-- Mouse
-- Keyboard
-- Virtual Gamepad
-
----
-
-## Pointer
-
-- Wii IR pointer
-- MotionPlus pointer
-- Hybrid pointer
-- Calibration
-- Smoothing
-- Dead zones
-
----
-
-## Buttons
-
-Examples
-
-```
-A
-→ Left Click
-
-B
-→ Right Click
-
-Power
-→ Suspend
-
-Home
-→ Steam
-
-+
-→ Volume Up
-
--
-→ Volume Down
-```
-
----
-
-## Gestures
-
-Potential gestures
-
-- Shake
-- Flick Left
-- Flick Right
-- Rotate
-- Throw
-- Double Shake
-
----
-
-## Profiles
-
-Automatic profile switching.
-
-Examples
-
-Desktop
-
-```
-Mouse
-```
-
-Steam
-
-```
-Steam shortcuts
-```
-
-Kodi
-
-```
-Media controls
-```
-
-Dolphin
-
-```
-Release Wiimote
-Allow Dolphin direct access
-```
-
----
-
-# Configuration
-
-Planned TOML configuration.
-
-Example
-
-```toml
-[button.power]
-action = "system.sleep"
-
-[button.home]
-action = "steam"
-
-[button.a]
-action = "mouse.left"
-
-[button.b]
-action = "mouse.right"
-
-[gesture.shake]
-action = "media.playpause"
-
-[ir]
-enabled = true
-smoothing = 0.80
-deadzone = 4
-```
-
----
-
-# Libraries (Tentative)
-
-Required
-
-- libevdev
-- libuinput
-
-Recommended
-
-- toml++
-- fmt
-- spdlog
-- sdbus-c++
-
----
-
-# Open Questions
-
-Still unknown
-
-- LED control
-- Battery status
-- Speaker support
-- Extension hot-plug handling
-- Nunchuk support
-- Classic Controller support
-- Automatic reconnect
-- Dolphin handoff implementation
-
----
-
-# Next Milestone
-
-Create the first C++ application.
-
-Goals
-
-1. Discover all Wiimote event devices.
-2. Open them using libevdev.
-3. Print button events.
-4. Print accelerometer values.
-5. Print MotionPlus values.
-6. Print IR coordinates.
-
-No mouse output yet.
-
-Only verify communication.
-
-After that:
-
-```
-libevdev
-        ↓
 Action Engine
-        ↓
-uinput
-        ↓
-Virtual Mouse
+    Maps controller input to configurable actions
 ```
+
+The application model intentionally differs from the Linux kernel model.
+
+Linux exposes multiple `/dev/input/event*` devices for a single physical controller (for example, a Wii Remote exposes separate devices for buttons, MotionPlus, accelerometer, and IR). MotionPlusPlus groups these endpoints into a single logical controller before processing input.
+
+## Current Status
+
+Current milestone:
+
+* CMake build system
+* C++20 project structure
+* Device discovery
+* Metadata extraction using libevdev
+
+The project is under active development and is **not yet ready for daily use**.
+
+## Dependencies
+
+Current dependencies:
+
+* C++20 compatible compiler
+* CMake
+* libevdev
+
+Future optional dependencies may include:
+
+* libudev
+* spdlog
+* fmt
+* toml++
+
+## Building
+
+```bash
+git clone https://github.com/IvanMeloFGLab/MotionPlusPlus.git
+
+cd MotionPlusPlus
+
+mkdir build
+
+cd build
+
+cmake ..
+
+cmake --build .
+```
+
+Run:
+
+```bash
+sudo ./MotionPlusPlus
+```
+
+(Currently elevated permissions are required to access input devices. Future releases will support running as a normal user through appropriate udev rules.)
+
+## Roadmap
+
+### Phase 1 — Core Input Layer
+
+* Device discovery
+* Metadata extraction
+* Event reading
+* Controller grouping
+
+### Phase 2 — Controller Support
+
+* Wii Remote
+* MotionPlus
+* IR camera
+* Nunchuk
+* Extension support
+
+### Phase 3 — Action Engine
+
+* Mouse
+* Keyboard
+* Profiles
+* Configurable actions
+* Configuration files
+
+### Phase 4 — Advanced Features
+
+* Gestures
+* Speaker support
+* VR experimentation
+* Plugin system
+* Additional controllers
+
+## Robotics
+
+MotionPlusPlus focuses on desktop interaction and controller functionality.
+
+A separate companion project, **ros2_motionplusplus**, will provide robotics-oriented functionality such as pose estimation, visualization, sensor fusion, and ROS 2 integration while sharing concepts and potentially parts of the core codebase.
