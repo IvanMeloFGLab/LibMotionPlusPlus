@@ -1,5 +1,14 @@
 #include "DeviceManager.hpp"
 
+using std::println;
+using std::string;
+using std::filesystem::directory_iterator;
+using std::filesystem::filesystem_error;
+using std::vector;
+using std::expected;
+using std::unexpected;
+using std::error_code;
+
 DeviceManager::DeviceManager() {
 }
 

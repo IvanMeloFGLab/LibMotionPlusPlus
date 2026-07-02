@@ -7,16 +7,12 @@
 #include <unistd.h>
 #include <cstring>
 
-using std::runtime_error;
-using std::expected;
-using std::unexpected;
-
 class DeviceConnection {
 public:
   DeviceConnection(const InputDevice &device);
   ~DeviceConnection();
 
-  expected<input_event, string> read();
+  std::expected<input_event, std::string> read();
 
 private:
   const InputDevice& device_;

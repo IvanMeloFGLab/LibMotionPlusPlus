@@ -1,5 +1,10 @@
 #include "DeviceConnection.hpp"
 
+using std::runtime_error;
+using std::expected;
+using std::unexpected;
+using std::string;
+
 DeviceConnection::DeviceConnection(const InputDevice &device) : device_(device){
 
   fd_ = open(device_.path.string().c_str(), O_RDONLY);
