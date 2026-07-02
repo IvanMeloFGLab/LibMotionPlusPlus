@@ -10,6 +10,7 @@ pkg_check_modules(LIBEVDEV REQUIRED IMPORTED_TARGET libevdev)
 add_executable(MotionPlusPlus
     src/main.cpp
     src/DeviceManager.cpp
+    src/DeviceConnection.cpp
 )
 
 target_include_directories(MotionPlusPlus PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)

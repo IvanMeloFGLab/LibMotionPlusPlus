@@ -7,7 +7,6 @@ DeviceManager::~DeviceManager() {
 
 }
 
-
 vector<InputDevice> DeviceManager::scan() {
   vector<InputDevice> input_devices;
 
@@ -19,7 +18,7 @@ vector<InputDevice> DeviceManager::scan() {
     }
   }
   catch (const filesystem_error& e) {
-    std::cerr << e.what() << '\n';
+    std::cerr << e.what() << endl;
   }
 
   return input_devices;
@@ -30,7 +29,7 @@ bool DeviceManager::populateMetadata(vector<InputDevice> &input_devices) {
     int fd = open(in_d.path.string().c_str(), O_RDONLY);
 
     if (fd < 0) {
-      std::cerr << "Error opening input event. Do you forget sudo?" << std::endl;
+      std::cerr << "Error opening device. Do you forget sudo?" << std::endl;
       return false;
     }
 

@@ -129,6 +129,30 @@ MotionPlusPlus/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MotionPlusPlus.dir/build.make CMakeFiles/MotionPlusPlus.dir/build
 .PHONY : MotionPlusPlus/fast
 
+src/DeviceConnection.o: src/DeviceConnection.cpp.o
+.PHONY : src/DeviceConnection.o
+
+# target to build an object file
+src/DeviceConnection.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/MotionPlusPlus.dir/build.make CMakeFiles/MotionPlusPlus.dir/src/DeviceConnection.cpp.o
+.PHONY : src/DeviceConnection.cpp.o
+
+src/DeviceConnection.i: src/DeviceConnection.cpp.i
+.PHONY : src/DeviceConnection.i
+
+# target to preprocess a source file
+src/DeviceConnection.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/MotionPlusPlus.dir/build.make CMakeFiles/MotionPlusPlus.dir/src/DeviceConnection.cpp.i
+.PHONY : src/DeviceConnection.cpp.i
+
+src/DeviceConnection.s: src/DeviceConnection.cpp.s
+.PHONY : src/DeviceConnection.s
+
+# target to generate assembly for a file
+src/DeviceConnection.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/MotionPlusPlus.dir/build.make CMakeFiles/MotionPlusPlus.dir/src/DeviceConnection.cpp.s
+.PHONY : src/DeviceConnection.cpp.s
+
 src/DeviceManager.o: src/DeviceManager.cpp.o
 .PHONY : src/DeviceManager.o
 
@@ -186,6 +210,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... MotionPlusPlus"
+	@echo "... src/DeviceConnection.o"
+	@echo "... src/DeviceConnection.i"
+	@echo "... src/DeviceConnection.s"
 	@echo "... src/DeviceManager.o"
 	@echo "... src/DeviceManager.i"
 	@echo "... src/DeviceManager.s"

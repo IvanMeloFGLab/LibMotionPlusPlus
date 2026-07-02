@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <filesystem>
 #include <vector>
@@ -22,7 +24,7 @@ struct InputDevice {
   string phys;
   string uniq;
 
-  InputDevice(std::filesystem::path path): path(path), name(""), phys(""), uniq(""), vendor(0), product(0), bustype(0) {}
+  InputDevice(std::filesystem::path path) : path(path), name(""), vendor(0), product(0), bus(0), phys(""), uniq("") {}
 };
 
 class DeviceManager {

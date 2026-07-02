@@ -1,4 +1,6 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/MotionPlusPlus.dir/src/DeviceConnection.cpp.o"
+  "CMakeFiles/MotionPlusPlus.dir/src/DeviceConnection.cpp.o.d"
   "CMakeFiles/MotionPlusPlus.dir/src/DeviceManager.cpp.o"
   "CMakeFiles/MotionPlusPlus.dir/src/DeviceManager.cpp.o.d"
   "CMakeFiles/MotionPlusPlus.dir/src/main.cpp.o"
