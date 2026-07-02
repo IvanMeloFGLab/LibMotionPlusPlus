@@ -1,5 +1,15 @@
 #include "DeviceManager.hpp"
 
+using std::println;
+using std::string;
+using std::filesystem::directory_iterator;
+using std::filesystem::filesystem_error;
+using std::vector;
+using std::expected;
+using std::unexpected;
+using std::error_code;
+using std::generic_category;
+
 DeviceManager::DeviceManager() {
 }
 
@@ -7,40 +17,33 @@ DeviceManager::~DeviceManager() {
 
 }
 
-
-vector<InputDevice> DeviceManager::scan() {
+expected<vector<InputDevice>, error_code> DeviceManager::scan() {
   vector<InputDevice> input_devices;
+  error_code ec;
 
-  try {
-    for (const auto& file : directory_iterator("/dev/input")) {
-      if (file.path().filename().string().starts_with("event")) {
-        input_devices.emplace_back(file.path());
-      }
+  for (const auto& file : directory_iterator("/dev/input", ec)) {
+    if (ec) return unexpected(ec);
+
+    if (file.path().filename().string().starts_with("event")) {
+      input_devices.emplace_back(file.path());
     }
-  }
-  catch (const filesystem_error& e) {
-    std::cerr << e.what() << '\n';
   }
 
   return input_devices;
 }
 
-bool DeviceManager::populateMetadata(vector<InputDevice> &input_devices) {
+expected<void, error_code> DeviceManager::populateMetadata(vector<InputDevice> &input_devices) {
   for(auto &in_d : input_devices) {
     int fd = open(in_d.path.string().c_str(), O_RDONLY);
 
-    if (fd < 0) {
-      std::cerr << "Error opening input event. Do you forget sudo?" << std::endl;
-      return false;
-    }
+    if (fd < 0) return unexpected(error_code(errno, generic_category()));
 
     libevdev *dev = nullptr;
     int rc = libevdev_new_from_fd(fd, &dev);
 
     if (rc < 0) {
-      std::cerr << "Error generating libevdev: " << strerror(-rc) << std::endl;
       close(fd);
-      return false;
+      return unexpected(error_code(-rc, generic_category()));
     }
 
     in_d.name = libevdev_get_name(dev);
@@ -57,5 +60,5 @@ bool DeviceManager::populateMetadata(vector<InputDevice> &input_devices) {
     close(fd);
   }
 
-  return true;
+  return {};
 }

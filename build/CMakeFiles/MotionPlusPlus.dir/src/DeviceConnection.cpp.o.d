@@ -1,5 +1,8 @@
-CMakeFiles/MotionPlusPlus.dir/src/main.cpp.o: \
- /home/ivan/FGLab/MotionPlusPlus/src/main.cpp /usr/include/stdc-predef.h \
+CMakeFiles/MotionPlusPlus.dir/src/DeviceConnection.cpp.o: \
+ /home/ivan/FGLab/MotionPlusPlus/src/DeviceConnection.cpp \
+ /usr/include/stdc-predef.h \
+ /home/ivan/FGLab/MotionPlusPlus/include/DeviceConnection.hpp \
+ /home/ivan/FGLab/MotionPlusPlus/include/DeviceManager.hpp \
  /usr/include/c++/11/iostream \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
@@ -155,12 +158,10 @@ CMakeFiles/MotionPlusPlus.dir/src/main.cpp.o: \
  /usr/include/c++/11/bits/locale_facets.tcc \
  /usr/include/c++/11/bits/basic_ios.tcc \
  /usr/include/c++/11/bits/ostream.tcc /usr/include/c++/11/istream \
- /usr/include/c++/11/bits/istream.tcc \
- /home/ivan/FGLab/MotionPlusPlus/include/DeviceManager.hpp \
- /usr/include/c++/11/filesystem /usr/include/c++/11/bits/fs_fwd.h \
- /usr/include/c++/11/chrono /usr/include/c++/11/ratio \
- /usr/include/c++/11/limits /usr/include/c++/11/ctime \
- /usr/include/c++/11/bits/parse_numbers.h \
+ /usr/include/c++/11/bits/istream.tcc /usr/include/c++/11/filesystem \
+ /usr/include/c++/11/bits/fs_fwd.h /usr/include/c++/11/chrono \
+ /usr/include/c++/11/ratio /usr/include/c++/11/limits \
+ /usr/include/c++/11/ctime /usr/include/c++/11/bits/parse_numbers.h \
  /usr/include/c++/11/bits/fs_path.h /usr/include/c++/11/utility \
  /usr/include/c++/11/bits/stl_relops.h /usr/include/c++/11/locale \
  /usr/include/c++/11/bits/locale_facets_nonio.h \
@@ -216,5 +217,4 @@ CMakeFiles/MotionPlusPlus.dir/src/main.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
  /usr/include/x86_64-linux-gnu/bits/unistd_ext.h \
  /usr/include/linux/close_range.h /usr/include/c++/11/cstring \
- /usr/include/string.h /usr/include/strings.h \
- /home/ivan/FGLab/MotionPlusPlus/include/DeviceConnection.hpp
+ /usr/include/string.h /usr/include/strings.h

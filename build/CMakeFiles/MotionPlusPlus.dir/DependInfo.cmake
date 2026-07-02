@@ -8,6 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "/home/ivan/FGLab/MotionPlusPlus/src/DeviceConnection.cpp" "CMakeFiles/MotionPlusPlus.dir/src/DeviceConnection.cpp.o" "gcc" "CMakeFiles/MotionPlusPlus.dir/src/DeviceConnection.cpp.o.d"
   "/home/ivan/FGLab/MotionPlusPlus/src/DeviceManager.cpp" "CMakeFiles/MotionPlusPlus.dir/src/DeviceManager.cpp.o" "gcc" "CMakeFiles/MotionPlusPlus.dir/src/DeviceManager.cpp.o.d"
   "/home/ivan/FGLab/MotionPlusPlus/src/main.cpp" "CMakeFiles/MotionPlusPlus.dir/src/main.cpp.o" "gcc" "CMakeFiles/MotionPlusPlus.dir/src/main.cpp.o.d"
   )
