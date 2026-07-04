@@ -9,8 +9,15 @@ using std::expected;
 using std::unexpected;
 using std::error_code;
 using std::generic_category;
+using std::filesystem::canonical;
+using std::pair;
+using std::make_pair;
+using std::unordered_map;
+using std::unique_ptr;
+using std::make_unique;
 
 DeviceManager::DeviceManager() {
+
 }
 
 DeviceManager::~DeviceManager() {
@@ -32,18 +39,18 @@ expected<vector<InputDevice>, error_code> DeviceManager::scan() {
   return input_devices;
 }
 
-expected<void, error_code> DeviceManager::populateMetadata(vector<InputDevice> &input_devices) {
+expected<void, pair<error_code, string>> DeviceManager::populateMetadata(vector<InputDevice> &input_devices) {
   for(auto &in_d : input_devices) {
     int fd = open(in_d.path.string().c_str(), O_RDONLY);
 
-    if (fd < 0) return unexpected(error_code(errno, generic_category()));
+    if (fd < 0) return unexpected(make_pair(error_code(errno, generic_category()), in_d.path.string()));
 
     libevdev *dev = nullptr;
     int rc = libevdev_new_from_fd(fd, &dev);
 
     if (rc < 0) {
       close(fd);
-      return unexpected(error_code(-rc, generic_category()));
+      return unexpected(make_pair(error_code(-rc, generic_category()), in_d.path.string()));
     }
 
     in_d.name = libevdev_get_name(dev);
@@ -56,9 +63,28 @@ expected<void, error_code> DeviceManager::populateMetadata(vector<InputDevice> &
     in_d.phys = phys ? phys : "";
     in_d.uniq = uniq ? uniq : "";
 
+    string real_path = canonical("/sys/class" + in_d.path.string().substr(4));
+
+    auto last = real_path.find("/input/");
+    if (last == string::npos) last = real_path.find("/sound/");
+    if (last == string::npos) return unexpected(make_pair(DeviceManagerError::NoHIDFound, in_d.name));
+
+    auto first = real_path.substr(0, last).rfind("/");
+    if (first == string::npos) return unexpected(make_pair(DeviceManagerError::NoHIDFound, in_d.name));
+
+    in_d.hid = real_path.substr(first+1, last-(first+1));
+
     libevdev_free(dev);
     close(fd);
   }
 
   return {};
+}
+
+unordered_map<string, vector<unique_ptr<InputDevice>>> DeviceManager::groupByHid(vector<InputDevice> &input_devices) {
+  unordered_map<string, vector<unique_ptr<InputDevice>>> grouped_devices;
+  for(auto &in_d : input_devices) {
+    grouped_devices[in_d.hid].emplace_back(make_unique<InputDevice>(in_d));
+  }
+  return grouped_devices;
 }
