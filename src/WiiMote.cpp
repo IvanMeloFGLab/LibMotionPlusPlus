@@ -43,7 +43,7 @@ pair<unordered_map<int, unique_ptr<Controller>>, int> WiiMote::discover(shared_p
 void WiiMote::update(int fd, input_event ev) {
   for (auto &conn : conns_) {
     if (conn.getFd() == fd) {
-      if (ev.type == EV_SYN) return;
+      if (ev.type == EV_SYN) {};
       if (ev.type == EV_KEY) {
         switch (ev.code) {
           case 304: {
@@ -81,8 +81,80 @@ void WiiMote::update(int fd, input_event ev) {
             break;
           }
         }
-        return;
+      }
+      if (ev.type == EV_ABS) {
+        if (conn.getDeviceName().find("Accelerometer") != string::npos) {
+          switch (ev.code) {
+            case 3: {
+              accel_.x = ev.value;
+              break;
+            } case 4: {
+              accel_.y = ev.value;
+              break;
+            } case 5: {
+              accel_.z = ev.value;
+              break;
+            }
+          }
+        } else if (conn.getDeviceName().find("Motion Plus") != string::npos) {
+          switch (ev.code) {
+            case 3: {
+              gyro_.roll = ev.value;
+              break;
+            } case 4: {
+              gyro_.pitch = ev.value;
+              break;
+            } case 5: {
+              gyro_.yaw = ev.value;
+              break;
+            }
+          }
+        } else if (conn.getDeviceName().find("IR") != string::npos) {
+          switch (ev.code) {
+            case 16: {
+              ir_.p1.x = ev.value;
+              break;
+            } case 17: {
+              ir_.p1.y = ev.value;
+              break;
+            } case 18: {
+              ir_.p2.x = ev.value;
+              break;
+            } case 19: {
+              ir_.p2.y = ev.value;
+              break;
+            } case 20: {
+              ir_.p3.x = ev.value;
+              break;
+            } case 21: {
+              ir_.p3.y = ev.value;
+              break;
+            } case 22: {
+              ir_.p4.x = ev.value;
+              break;
+            } case 23: {
+              ir_.p4.y = ev.value;
+              break;
+            }
+          }
+        }
       }
     }
   }
+}
+
+const Buttons WiiMote::getButtons() const {
+  return btns_;
+}
+
+const Accelerometer WiiMote::getAccel() const {
+  return accel_;
+}
+
+const Gyroscope WiiMote::getGyro() const {
+  return gyro_;
+}
+
+const Ir WiiMote::getIr() const {
+  return ir_;
 }

@@ -67,9 +67,12 @@ int main() {
   while (true) {
     auto up = cm.update(10ms);
 
-    auto wm = dynamic_cast<WiiMote*>(cm.ctrls_[1].get());
-    if (wm) {
-      println("A value: {}", wm->btns_.a);
+    auto wm = dynamic_cast<WiiMote*>(cm.getController(1));
+    auto wm2 = dynamic_cast<WiiMote*>(cm.getController(2));
+    if (wm && wm2) {
+      //println("Ir p1 x: {}, y: {}", wm->ir_.p1.x, wm->ir_.p1.y);
+      //println("Ir p2 x: {}, y: {}", wm->ir_.p2.x, wm->ir_.p2.y);
+      println("A button ctrl 1: {}, ctrl 2: {}", wm->getButtons().a, wm2->getButtons().a);
     }
 
     if (!up) {

@@ -17,10 +17,11 @@ public:
   std::expected<void, std::error_code> connect();
   std::expected<void, std::error_code> update(std::chrono::milliseconds timeout);
 
-  std::unordered_map<int, std::unique_ptr<Controller>> ctrls_;
+  Controller* getController(int id);
 
 private:
   std::expected<void, std::error_code> updateFds();
 
+  std::unordered_map<int, std::unique_ptr<Controller>> ctrls_;
   std::vector<pollfd> fds_;
 };

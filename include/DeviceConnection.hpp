@@ -22,6 +22,7 @@ public:
   std::expected<input_event, std::error_code> read();
 
   int getFd();
+  const std::string getDeviceName();
 
 private:
   const InputDevice& device_;

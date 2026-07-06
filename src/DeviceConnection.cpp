@@ -59,3 +59,9 @@ expected<input_event, error_code> DeviceConnection::read() {
 int DeviceConnection::getFd() {
   return fd_;
 }
+
+const string DeviceConnection::getDeviceName() {
+  return device_.name;
+}
+
+

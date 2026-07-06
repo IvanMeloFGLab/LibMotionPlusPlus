@@ -58,6 +58,10 @@ expected<void, error_code> ControllerManager::update(milis timeout) {
   return {};
 }
 
+Controller* ControllerManager::getController(int id) {
+  return ctrls_[id].get();
+}
+
 expected<void, error_code> ControllerManager::updateFds() {
   it_ctrls {
     if (!ctrl.second->isConnected()) return unexpected(error_code(ENOTCONN, generic_category()));
