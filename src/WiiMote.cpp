@@ -14,7 +14,7 @@ using std::error_code;
 using std::generic_category;
 
 WiiMote::WiiMote(shared_ptr<DeviceManager> dm, int ctrl_id, vector<std::unique_ptr<InputDevice>> devs) : Controller(dm, ctrl_id, move(devs)) {
-
+  type_ = "Wiimote";
 }
 
 WiiMote::WiiMote(WiiMote&& other) : Controller(move(other)) {

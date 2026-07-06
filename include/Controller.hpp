@@ -28,6 +28,7 @@ public:
   std::vector<std::string> getDevicesNames() const;
   int getId() const;
   std::string getHid() const;
+  std::string getType() const;
 
   std::vector<int> getFds();
 
@@ -40,7 +41,7 @@ protected:
   std::shared_ptr<DeviceManager> dm_;
   int ctrl_id_;
   std::vector<std::unique_ptr<InputDevice>> devs_;
-  std::string hid_;
+  std::string hid_, type_;
   bool connected_;
   std::vector<DeviceConnection> conns_;
 };
@@ -50,6 +51,6 @@ struct std::formatter<Controller> : std::formatter<std::string> {
   auto format(const Controller &ctrl, format_context &ctx) const {
     std::string tmp;
     for (const auto &name : ctrl.getDevicesNames()) tmp += std::format("    - {}\n", name);
-    return std::formatter<std::string>::format(std::format("Controller {}, {}\n", ctrl.getId(), ctrl.getHid()) + tmp, ctx);
+    return std::formatter<std::string>::format(std::format("{} controller {}, {}\n", ctrl.getType(), ctrl.getId(), ctrl.getHid()) + tmp, ctx);
   }
 };

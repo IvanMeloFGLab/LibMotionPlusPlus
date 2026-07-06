@@ -76,3 +76,7 @@ bool Controller::isFdFromCtrl(int &fd) {
   return false;
 }
 
+std::string Controller::getType() const {
+  return type_;
+}
+

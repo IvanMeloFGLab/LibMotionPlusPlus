@@ -9,15 +9,36 @@ using std::expected;
 using std::unexpected;
 using std::generic_category;
 using std::unordered_map;
+using std::pair;
+using std::string;
+using std::make_shared;
 
 using milis = std::chrono::milliseconds;
 
-ControllerManager::ControllerManager(unordered_map<int, unique_ptr<Controller>> ctrls) : ctrls_(move(ctrls)) {
+ControllerManager::ControllerManager() {
 
 }
 
 ControllerManager::~ControllerManager() {
 
+}
+
+expected<vector<pair<int, string>>, error_code> ControllerManager::scan() {
+  auto input_devices = dm_.scan();
+  if (!input_devices) return unexpected(input_devices.error());
+
+  auto res = dm_.populateMetadata(*input_devices);
+  if (!res) return unexpected(res.error().first);
+  //println("Populating metadata error: {}. From {} device.", res.error().first.message(), res.error().second);
+
+  auto groups = dm_.groupByHid(*input_devices);
+  ctrls_ = WiiMote::discover(make_shared<DeviceManager>(dm_), 1, groups).first;
+
+  vector<pair<int, string>> tmp;
+  for (const auto &ctrl : ctrls_) {
+    tmp.emplace_back(ctrl.second->getId(), ctrl.second->getType());
+  }
+  return tmp;
 }
 
 expected<void, error_code> ControllerManager::connect() {
