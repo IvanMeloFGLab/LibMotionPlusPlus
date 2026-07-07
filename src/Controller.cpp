@@ -10,7 +10,7 @@ using std::error_code;
 using std::make_unique;
 using std::generic_category;
 using std::move;
-using std::println;
+using std::ifstream;
 
 Controller::Controller(shared_ptr<DeviceManager> dm, int ctrl_id, vector<unique_ptr<InputDevice>> devs) : dm_(dm), ctrl_id_(ctrl_id), devs_(move(devs)) {
   hid_ = devs_.front()->hid;
@@ -55,6 +55,19 @@ int Controller::getId() const {
 
 string Controller::getHid() const {
   return hid_;
+}
+
+expected<string, error_code> Controller::getMac() const{
+  ifstream uevent("/sys/bus/hid/devices/" + hid_ + "/uevent");
+  if (!uevent) return unexpected(error_code(errno, generic_category()));
+
+  string line;
+  while (getline(uevent, line)) {
+    if (line.find("HID_UNIQ=") != string::npos) {
+      return line.substr(line.find("=") + 1);
+    }
+  }
+  return unexpected(error_code(ENOENT, generic_category()));
 }
 
 vector<int> Controller::getFds() {

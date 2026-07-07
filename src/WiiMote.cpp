@@ -20,11 +20,14 @@ using std::max;
 using std::min;
 using std::sin;
 using std::cos;
+using std::ifstream;
+using std::ofstream;
 
 using milis = std::chrono::milliseconds;
 
 WiiMote::WiiMote(shared_ptr<DeviceManager> dm, int ctrl_id, vector<std::unique_ptr<InputDevice>> devs) : Controller(dm, ctrl_id, move(devs)) {
   type_ = "Wiimote";
+  bat_path_ = "/sys/class/power_supply/wiimote_battery_";
 }
 
 WiiMote::WiiMote(WiiMote&& other) : Controller(move(other)) {
@@ -284,4 +287,14 @@ const Gyroscope WiiMote::getGyro() const {
 
 const Ir WiiMote::getIr() const {
   return ir_;
+}
+
+expected<int, error_code> WiiMote::getBatPer() const {
+  auto mac = getMac();
+  if (!mac) return unexpected(mac.error());
+  ifstream file(bat_path_ + *mac + "/capacity");
+  if (!file) return unexpected(error_code(errno, generic_category()));
+  string val;
+  file >> val;
+  return stoi(val);
 }

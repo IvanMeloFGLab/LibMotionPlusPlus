@@ -9,6 +9,7 @@
 #include <libevdev/libevdev.h>
 #include <utility>
 #include <unordered_map>
+#include <fstream>
 
 class Controller {
 protected:
@@ -28,7 +29,9 @@ public:
   std::vector<std::string> getDevicesNames() const;
   int getId() const;
   std::string getHid() const;
+  std::expected<std::string, std::error_code> getMac() const;
   std::string getType() const;
+  virtual std::expected<int, std::error_code> getBatPer() const = 0;
 
   std::vector<int> getFds();
 
@@ -49,7 +52,8 @@ protected:
 template<>
 struct std::formatter<Controller> : std::formatter<std::string> {
   auto format(const Controller &ctrl, format_context &ctx) const {
-    std::string tmp;
+    auto bat = ctrl.getBatPer();
+    std::string tmp = bat ? std::format("Battery: {}%\n", *bat) : "Battery: unknown\n";
     for (const auto &name : ctrl.getDevicesNames()) tmp += std::format("    - {}\n", name);
     return std::formatter<std::string>::format(std::format("{} controller {}, {}\n", ctrl.getType(), ctrl.getId(), ctrl.getHid()) + tmp, ctx);
   }

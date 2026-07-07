@@ -9,6 +9,7 @@
 #include <thread>
 #include <algorithm>
 #include <cmath>
+#include <fstream>
 
 struct Buttons {
   bool a;
@@ -70,10 +71,13 @@ public:
   const Accelerometer getAccel() const;
   const Gyroscope getGyro() const;
   const Ir getIr() const;
+  std::expected<int, std::error_code> getBatPer() const override;
 
 private:
   Buttons btns_;
   Accelerometer accel_;
   Gyroscope gyro_;
   Ir ir_;
+
+  std::string bat_path_;
 };
