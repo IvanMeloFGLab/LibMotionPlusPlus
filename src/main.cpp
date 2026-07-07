@@ -27,11 +27,14 @@ int main() {
     return 1;
   }
 
-  auto wm = dynamic_cast<WiiMote*>(cm.getController(1));
-  auto wm2 = dynamic_cast<WiiMote*>(cm.getController(2));
+  //auto wm = dynamic_cast<WiiMote*>(cm.getController(1));
+  //auto wm2 = dynamic_cast<WiiMote*>(cm.getController(2));
 
-  wm->rumbleSine(40, 3000ms, 1.5);
-  wm2->rumbleCosine(40, 3000ms, 1.5);
+  //wm->rumble(100, 5000ms, 1.0);
+  //wm2->rumble(100, 5000ms, 1.0, 1.0);
+  //auto led = wm->animLed(2500ms);
+  //if (!led) {println("Leds error: {}", led.error().message());}
+  //wm2->rumbleCosine(40, 3000ms, 1.5);
 
   while (true) {
     auto up = cm.update(10ms);
