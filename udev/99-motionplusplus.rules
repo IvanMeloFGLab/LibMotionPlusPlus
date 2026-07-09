@@ -1,0 +1,2 @@
+# /etc/udev/rules.d/99-motionplusplus.rules
+KERNEL=="event*", SUBSYSTEM=="input", ATTRS{idVendor}=="057e", ATTRS{idProduct}=="0306", MODE="0660", GROUP="input"

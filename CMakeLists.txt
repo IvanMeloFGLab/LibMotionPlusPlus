@@ -5,6 +5,11 @@ project(MotionPlusPlus)
 set(CMAKE_CXX_COMPILER g++-14)
 set(CMAKE_CXX_STANDARD 23)
 
+option(INSTALL_UDEV_RULES "Install udev rule for controllers device access" OFF)
+if(INSTALL_UDEV_RULES)
+    install(FILES udev/99-motionplusplus.rules DESTINATION /etc/udev/rules.d)
+endif()
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBEVDEV REQUIRED IMPORTED_TARGET libevdev)
 
