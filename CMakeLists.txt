@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.20)
 
 project(LibMotionPlusPlus VERSION 0.4.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_COMPILER g++-14)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -38,8 +37,6 @@ target_compile_features(libmotionplusplus PUBLIC cxx_std_23)
 target_compile_options(libmotionplusplus PRIVATE
     -Wall
     -Wextra
-    -Wpedantic
-    -Werror
 )
 
 set_target_properties(libmotionplusplus PROPERTIES
