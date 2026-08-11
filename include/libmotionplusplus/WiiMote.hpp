@@ -14,29 +14,29 @@
 
 namespace motionplusplus {
   struct Buttons {
-    bool a;
-    bool b;
-    bool right;
-    bool left;
-    bool up;
-    bool down;
-    bool plus;
-    bool home;
-    bool minus;
-    bool one;
-    bool two;
+    bool a = false;
+    bool b = false;
+    bool right = false;
+    bool left = false;
+    bool up = false;
+    bool down = false;
+    bool plus = false;
+    bool home = false;
+    bool minus = false;
+    bool one = false;
+    bool two = false;
   };
 
   struct Accelerometer {
-    int16_t x;
-    int16_t y;
-    int16_t z;
+    int16_t x = 0;
+    int16_t y = 0;
+    int16_t z = 0;
   };
 
   struct Gyroscope {
-    int16_t roll;
-    int16_t pitch;
-    int16_t yaw;
+    int16_t roll = 0;
+    int16_t pitch = 0;
+    int16_t yaw = 0;
   };
 
   struct Point {
