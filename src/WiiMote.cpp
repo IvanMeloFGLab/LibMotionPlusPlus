@@ -1,4 +1,5 @@
 #include "libmotionplusplus/WiiMote.hpp"
+#include <unordered_map>
 
 using std::vector;
 using std::string;
@@ -23,6 +24,7 @@ using std::cos;
 using std::ifstream;
 using std::ofstream;
 using std::ranges::contains;
+using std::unordered_map;
 
 using milis = std::chrono::milliseconds;
 
@@ -34,6 +36,9 @@ WiiMote::WiiMote(shared_ptr<DeviceManager> dm, int ctrl_id, vector<std::unique_p
   leds_path_ = "/sys/class/leds/" + hid_ + ":blue:p";
   leds_ = Leds(leds_path_);
   stop_leds_ = false;
+
+  btns_map_ = {{"a", &btns_.a}, {"b", &btns_.b}, {"right", &btns_.right}, {"left", &btns_.left}, {"up", &btns_.up}, {"down", &btns_.down}, {"plus", &btns_.plus},
+                     {"home", &btns_.home}, {"minus", &btns_.minus}, {"one", &btns_.one}, {"two", &btns_.two}};
 
   animLed(milis(3000), milis(350));
 }
@@ -252,8 +257,8 @@ bool WiiMote::onLostFd(int fd) {
   return true;
 }
 
-const Buttons WiiMote::getButtons() const {
-  return btns_;
+const unordered_map<string, bool*> WiiMote::getButtons() const {
+  return btns_map_;
 }
 
 const Accelerometer WiiMote::getAccel() const {

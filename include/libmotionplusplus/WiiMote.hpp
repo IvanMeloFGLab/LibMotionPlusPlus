@@ -11,6 +11,7 @@
 #include <cmath>
 #include <fstream>
 #include <atomic>
+#include <unordered_map>
 
 namespace motionplusplus {
   struct Buttons {
@@ -92,7 +93,7 @@ namespace motionplusplus {
 
     bool onLostFd(int fd) override;
 
-    const Buttons getButtons() const;
+    const std::unordered_map<std::string, bool*> getButtons() const;
     const Accelerometer getAccel() const;
     const Gyroscope getGyro() const;
     const Ir getIr() const;
@@ -107,6 +108,8 @@ namespace motionplusplus {
     Gyroscope gyro_;
     Ir ir_;
     Leds leds_;
+
+    std::unordered_map<std::string, bool*> btns_map_;
 
     std::thread leds_thread_;
     std::atomic<bool> stop_leds_{false};
