@@ -1,5 +1,4 @@
 #include "libmotionplusplus/ControllerManager.hpp"
-#include <print>
 
 #define it_ctrls for (auto &ctrl : ctrls_)
 
@@ -50,7 +49,6 @@ expected<vector<pair<int, string>>, error_code> ControllerManager::scan() {
           ctrl.second->addDevices(move(it->second));
           size_t after = ctrl.second->getDeviceNumber();
           if (after != before) {
-            std::println("New controller 1");
             ctrl.second->setConnected(false);
             new_controllers_ = true;
           }
@@ -68,7 +66,6 @@ expected<vector<pair<int, string>>, error_code> ControllerManager::scan() {
   for (auto &[id, ctrl] : discovered.first) {
     ctrls_.emplace(id, std::move(ctrl));
     new_controllers_ = true;
-    std::println("New controller 2");
   }
 
   vector<pair<int, string>> tmp;
@@ -93,7 +90,6 @@ expected<void, error_code> ControllerManager::update(milis timeout) {
     last_scan_ = steady_clock::now();
     auto raw_devices = dm_.scan();
     if (!raw_devices) return unexpected(raw_devices.error());
-    std::println("Update: Raw devices, {}", static_cast<int>(raw_devices->size()));
     if (static_cast<int>(raw_devices->size()) != device_num_) {
       auto scn = scan();
       if (!scn) return unexpected(scn.error());
