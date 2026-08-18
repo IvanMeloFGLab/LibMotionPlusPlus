@@ -102,6 +102,10 @@ vector<int> Controller::getFds() {
   return fds;
 }
 
+int Controller::getDeviceNumber() const {
+  return devs_.size();
+}
+
 void Controller::setConnected(bool conn) {
   connected_ = conn;
 }

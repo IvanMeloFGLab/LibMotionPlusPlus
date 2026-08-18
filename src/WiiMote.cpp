@@ -1,5 +1,4 @@
 #include "libmotionplusplus/WiiMote.hpp"
-#include <unordered_map>
 
 using std::vector;
 using std::string;
