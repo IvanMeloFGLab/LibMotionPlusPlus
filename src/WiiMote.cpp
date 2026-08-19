@@ -30,7 +30,7 @@ using milis = std::chrono::milliseconds;
 using namespace motionplusplus;
 
 WiiMote::WiiMote(shared_ptr<DeviceManager> dm, int ctrl_id, vector<std::unique_ptr<InputDevice>> devs) : Controller(dm, ctrl_id, move(devs)) {
-  type_ = "Wiimote";
+  type_ = "wiimote";
   bat_path_ = "/sys/class/power_supply/wiimote_battery_";
   leds_path_ = "/sys/class/leds/" + hid_ + ":blue:p";
   leds_ = Leds(leds_path_);
