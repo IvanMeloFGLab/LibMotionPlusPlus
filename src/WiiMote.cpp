@@ -39,6 +39,8 @@ WiiMote::WiiMote(shared_ptr<DeviceManager> dm, int ctrl_id, vector<std::unique_p
   btns_map_ = {{"a", &btns_.a}, {"b", &btns_.b}, {"right", &btns_.right}, {"left", &btns_.left}, {"up", &btns_.up}, {"down", &btns_.down}, {"plus", &btns_.plus},
                      {"home", &btns_.home}, {"minus", &btns_.minus}, {"one", &btns_.one}, {"two", &btns_.two}};
 
+  accel_map_ = {{"x", &accel_.x}, {"y", &accel_.y}, {"z", &accel_.z}};
+
   animLed(milis(3000), milis(350));
 }
 
@@ -260,8 +262,8 @@ const unordered_map<string, bool*> WiiMote::getButtons() const {
   return btns_map_;
 }
 
-const Accelerometer WiiMote::getAccel() const {
-  return accel_;
+const std::unordered_map<std::string, int16_t*> WiiMote::getAccel() const {
+  return accel_map_;
 }
 
 const Gyroscope WiiMote::getGyro() const {

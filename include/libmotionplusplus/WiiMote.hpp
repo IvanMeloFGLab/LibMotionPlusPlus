@@ -94,7 +94,7 @@ namespace motionplusplus {
     bool onLostFd(int fd) override;
 
     const std::unordered_map<std::string, bool*> getButtons() const;
-    const Accelerometer getAccel() const;
+    const std::unordered_map<std::string, int16_t*> getAccel() const;
     const Gyroscope getGyro() const;
     const Ir getIr() const;
     Leds getLeds();
@@ -110,6 +110,7 @@ namespace motionplusplus {
     Leds leds_;
 
     std::unordered_map<std::string, bool*> btns_map_;
+    std::unordered_map<std::string, int16_t*> accel_map_;
 
     std::thread leds_thread_;
     std::atomic<bool> stop_leds_{false};

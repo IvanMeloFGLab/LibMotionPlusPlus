@@ -77,10 +77,10 @@ expected<void, pair<error_code, string>> DeviceManager::populateMetadata(vector<
 
     auto last = real_path.find("/input/");
     if (last == string::npos) last = real_path.find("/sound/");
-    if (last == string::npos) return unexpected(make_pair(DeviceManagerError::NoHIDFound, in_d.name));
+    if (last == string::npos) continue; //return unexpected(make_pair(DeviceManagerError::NoHIDFound, in_d.name));
 
     auto first = real_path.substr(0, last).rfind("/");
-    if (first == string::npos) return unexpected(make_pair(DeviceManagerError::NoHIDFound, in_d.name));
+    if (first == string::npos) continue; //return unexpected(make_pair(DeviceManagerError::NoHIDFound, in_d.name));
 
     in_d.hid = real_path.substr(first+1, last-(first+1));
 
