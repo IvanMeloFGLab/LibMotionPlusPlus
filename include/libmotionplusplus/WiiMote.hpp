@@ -2,6 +2,7 @@
 
 #include "Controller.hpp"
 #include <vector>
+#include <array>
 #include <memory>
 #include <chrono>
 #include <utility>
@@ -14,6 +15,11 @@
 #include <unordered_map>
 
 namespace motionplusplus {
+
+  const std::array<std::string, 11> BTNS = {"a", "b", "right", "left", "up", "down", "plus", "home", "minus", "one", "two"};
+  const std::array<std::string, 3> ACCEL = {"x", "y", "z"};
+  const std::array<std::string, 3> GYRO = {"roll", "pitch", "yaw"};
+
   struct Buttons {
     bool a = false;
     bool b = false;
@@ -93,8 +99,8 @@ namespace motionplusplus {
 
     bool onLostFd(int fd) override;
 
-    const std::unordered_map<std::string, bool*> getButtons() const;
-    const std::unordered_map<std::string, int16_t*> getAccel() const;
+    const std::unordered_map<std::string, bool> getButtons() const;
+    const std::unordered_map<std::string, int16_t> getAccel() const;
     const Gyroscope getGyro() const;
     const Ir getIr() const;
     Leds getLeds();
@@ -109,8 +115,8 @@ namespace motionplusplus {
     Ir ir_;
     Leds leds_;
 
-    std::unordered_map<std::string, bool*> btns_map_;
-    std::unordered_map<std::string, int16_t*> accel_map_;
+    std::unordered_map<std::string, bool> btns_map_;
+    std::unordered_map<std::string, int16_t> accel_map_;
 
     std::thread leds_thread_;
     std::atomic<bool> stop_leds_{false};
