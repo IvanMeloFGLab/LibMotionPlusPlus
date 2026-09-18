@@ -4,57 +4,57 @@
 
 LibMotionPlusPlus is an open-source C++ library focused on bringing advanced support for motion-based controllers such as the Nintendo Wii Remote, Wii MotionPlus, Sony PS Move, and future devices to Linux.
 
-It handles device discovery, hotplug/disconnect handling, and decoding raw controller state — buttons, motion, extensions — reliably and without needing root access. It intentionally does not map input to actions or emulate devices; see [Project Direction](#project-direction) for where that lives.
+It handles device discovery, hotplug/disconnect handling, and decoding raw controller state — buttons, motion, extensions — reliably and without needing root access. It intentionally does not map input to actions or emulate devices; that's left to the projects built on top of it.
 
-## Project Direction
+It is part of a small ecosystem:
 
-LibMotionPlusPlus is a **C++ library**, its scope is : **device discovery, hotplug/disconnect handling, and the controller abstraction layer** — reading raw controller state (buttons, motion, extensions) reliably. It does not map input to actions, emulate devices, or provide any user-facing configuration; that's left to the projects built on top of it.
+- **`LibMotionPlusPlus`** *(this repository)* — the core library. Discovers controllers, manages their lifecycle, and exposes raw decoded input. No mapping, no virtual devices, no configuration.
+- **[`MotionPlusPlus`](https://github.com/IvanMeloFGLab/MotionPlusPlus)**  the desktop daemon built on top of this library. Maps controller input to actions and creates virtual input devices via `uinput`, driven by a per-controller TOML config. **Released — v1.0.0.**
+- **`ros2_motionplusplus`** *(planned)* — a ROS 2 package for robotics use cases: motion-controller data collection, sensor fusion/pose estimation, and RViz visualization support.
 
-Three separate projects make up the overall ecosystem:
+A small demo executable showing basic usage of the library is included under [`example/`](example/).
+But the biggest example is the MotionPlusPlus project.
 
-* **`LibMotionPlusPlus`** *(this repository)* — the core library. Discovers controllers, manages their lifecycle, and exposes raw decoded input. No mapping, no virtual devices, no configuration — just the controllers.
-* **`MotionPlusPlus`** *(daemon/application, planned)* — a desktop daemon built on top of the library, responsible for mapping controller input to actions, creating and managing virtual input devices (mouse/keyboard/gamepad emulation), and user-facing profile configuration.
-* **`ros2_motionplusplus`** *(planned)* — a ROS 2 package built on top of the library, focused on motion-controller data collection, sensor fusion/pose estimation, and RViz visualization support for robotics use cases.
+## Status
 
-A small demo executable showing basic usage of the library itself is included under [`example/`](example/).
+Stable and in active real-world use — this library is what [`MotionPlusPlus`](https://github.com/IvanMeloFGLab/MotionPlusPlus) v1.0.0 is built on, and has been exercised extensively under real hardware: multiple simultaneous controllers, hotplug races, partial extension connect/disconnect, and permission edge cases.
+
+Currently supports:
+
+- Device discovery with runtime hotplug/disconnect handling, robust to transient per-device scan failures (a single unreadable or misclassified device no longer aborts the whole scan)
+- Metadata extraction via libevdev
+- udev-based permission setup — no root required for normal use, only for the one-time udev rule install
+- Wii Remote input decoding: buttons, accelerometer, MotionPlus, IR camera, with LED and battery support
+- Correct multi-controller tracking with no spurious duplicate-connection events
+
+## Known limitations
+
+- **Device scanning is still poll-based**, not event-driven. It's correct (no known stall/race conditions remaining) but has an inherent latency floor tied to the scan interval, and does a small amount of unnecessary work every tick regardless of whether anything changed. A migration to `udev_monitor` (kernel-pushed hotplug events instead of polling) is planned for a future v2.0.0, not yet started.
+- **`WiiMote` is intentionally non-copyable and non-movable.** It owns a background LED-animation thread that captures `this` directly, so moving the object would leave that thread pointing at stale memory. Always construct/store it behind `unique_ptr`.
+- **IR camera registration can be slow or delayed on first connect** (up to a minute, occasionally requiring a Motion Plus reconnect to unstick). This is a confirmed `hid-wiimote` kernel driver quirk — Motion Plus hotplug is polled internally by the driver on a fixed timer, and IR init appears tied to that same state machine. Nothing actionable on this library's side.
 
 ## Project Goals
 
-* Native Linux support
-* Low-latency input processing
-* Modular and extensible architecture, packaged as a reusable library
-* Hotplug handling (connect/disconnect, partial extension loss)
-* Support for multiple controller families
+- Native Linux support
+- Low-latency input processing
+- Modular and extensible architecture, packaged as a reusable library
+- Hotplug handling (connect/disconnect, partial extension loss)
+- Support for multiple controller families
 
 ## Planned Controller Support
 
-* Nintendo Wii Remote
-* Wii MotionPlus
-* Wii Nunchuk
-* Sony PS Move
-* Additional HID motion controllers in the future
-
-## Current Status
-
-Current milestone:
-
-* Library-oriented CMake build system (`find_package`-able, versioned, exported targets)
-* C++23 codebase
-* Device discovery with runtime hotplug/disconnect handling
-* Metadata extraction using libevdev
-* udev-based permission setup — no root required for normal use
-* Wii Remote input decoding (buttons, accelerometer, MotionPlus, IR) with LED and battery support
-
-The project is under active development and is **not yet ready for daily use**. The public API is not yet stable (pre-1.0) and may change between minor versions.
+- Nintendo Wii Remote
+- Wii MotionPlus
+- Wii Nunchuk
+- Sony PS Move
+- Additional HID motion controllers in the future
 
 ## Dependencies
 
-Current dependencies:
-
-* C++23 compatible compiler
-* CMake ≥ 3.20
-* libevdev
-* pkg-config
+- C++23 compatible compiler
+- CMake ≥ 3.20
+- libevdev
+- pkg-config
 
 ## Building
 
@@ -78,12 +78,12 @@ Once installed:
 
 ```cmake
 find_package(LibMotionPlusPlus REQUIRED)
-target_link_libraries(your_target PRIVATE LibMotionPlusPlus::motionplusplus)
+target_link_libraries(your_target PRIVATE LibMotionPlusPlus::libmotionplusplus)
 ```
 
 ### Device permissions (no `sudo` required)
 
-Accessing a Wii Remote's input, LED, and battery interfaces normally requires elevated privileges. MotionPlusPlus ships a udev rule set to avoid this.
+Accessing a Wii Remote's input, LED, and battery interfaces normally requires elevated privileges. LibMotionPlusPlus ships a udev rule set to avoid this.
 
 **Option 1 — let CMake install it:**
 
@@ -95,7 +95,7 @@ sudo cmake --install .
 **Option 2 — install manually:**
 
 ```bash
-sudo cp udev/99-motionplusplus.rules /etc/udev/rules.d/
+sudo cp udev/99-libmotionplusplus.rules /etc/udev/rules.d/
 sudo udevadm control --reload-rules
 sudo usermod -aG input $USER
 ```

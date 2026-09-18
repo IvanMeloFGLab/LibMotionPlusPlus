@@ -2,13 +2,16 @@ cmake_minimum_required(VERSION 3.20)
 
 project(LibMotionPlusPlus VERSION 0.4.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_COMPILER g++-14)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif()
+
 option(BUILD_SHARED_LIBS "Build shared instead of static libs" OFF)
 option(MOTIONPLUSPLUS_BUILD_EXAMPLES "Build example programs" ON)
-option(INSTALL_UDEV_RULES "Install udev rule for controllers device access" OFF)
+option(MOTIONPLUSPLUS_INSTALL_UDEV_RULES "Install udev rule for controllers device access" OFF)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBEVDEV REQUIRED IMPORTED_TARGET libevdev)
@@ -38,8 +41,8 @@ target_compile_features(libmotionplusplus PUBLIC cxx_std_23)
 target_compile_options(libmotionplusplus PRIVATE
     -Wall
     -Wextra
-    -Wpedantic
-    -Werror
+    $<$<CONFIG:Debug>:-Wpedantic>
+    $<$<CONFIG:Debug>:-Werror>
 )
 
 set_target_properties(libmotionplusplus PROPERTIES

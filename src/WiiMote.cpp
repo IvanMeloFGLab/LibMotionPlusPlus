@@ -23,23 +23,28 @@ using std::cos;
 using std::ifstream;
 using std::ofstream;
 using std::ranges::contains;
+using std::unordered_map;
 
 using milis = std::chrono::milliseconds;
 
 using namespace motionplusplus;
 
 WiiMote::WiiMote(shared_ptr<DeviceManager> dm, int ctrl_id, vector<std::unique_ptr<InputDevice>> devs) : Controller(dm, ctrl_id, move(devs)) {
-  type_ = "Wiimote";
+  type_ = "wiimote";
   bat_path_ = "/sys/class/power_supply/wiimote_battery_";
   leds_path_ = "/sys/class/leds/" + hid_ + ":blue:p";
   leds_ = Leds(leds_path_);
   stop_leds_ = false;
 
-  animLed(milis(3000), milis(350));
-}
+  for (const auto &btn : BTNS) {
+    btns_map_[btn] = false;
+  }
 
-WiiMote::WiiMote(WiiMote&& other) : Controller(move(other)) {
+  for (const auto &axis : ACCEL) {
+    accel_map_[axis] = 0;
+  }
 
+  auto a = animLed(milis(3000), milis(350));
 }
 
 WiiMote::~WiiMote() {
@@ -72,37 +77,37 @@ void WiiMote::update(int fd, input_event ev) {
       if (ev.type == EV_KEY) {
         switch (ev.code) {
           case 304: {
-            btns_.a = ev.value;
+            btns_map_.at("a") = ev.value;
             break;
           } case 305: {
-            btns_.b = ev.value;
+            btns_map_.at("b") = ev.value;
             break;
           } case 106: {
-            btns_.right = ev.value;
+            btns_map_.at("right") = ev.value;
             break;
           } case 105: {
-            btns_.left = ev.value;
+            btns_map_.at("left") = ev.value;
             break;
           } case 103: {
-            btns_.up = ev.value;
+            btns_map_.at("up") = ev.value;
             break;
           } case 108: {
-            btns_.down = ev.value;
+            btns_map_.at("down") = ev.value;
             break;
           } case 407: {
-            btns_.plus = ev.value;
+            btns_map_.at("plus") = ev.value;
             break;
           } case 316: {
-            btns_.home = ev.value;
+            btns_map_.at("home") = ev.value;
             break;
           } case 412: {
-            btns_.minus = ev.value;
+            btns_map_.at("minus") = ev.value;
             break;
           } case 257: {
-            btns_.one = ev.value;
+            btns_map_.at("one") = ev.value;
             break;
           } case 258: {
-            btns_.two = ev.value;
+            btns_map_.at("two") = ev.value;
             break;
           }
         }
@@ -111,13 +116,13 @@ void WiiMote::update(int fd, input_event ev) {
         if (conn.getDeviceName().find("Accelerometer") != string::npos) {
           switch (ev.code) {
             case 3: {
-              accel_.x = ev.value;
+              accel_map_.at("x") = ev.value;
               break;
             } case 4: {
-              accel_.y = ev.value;
+              accel_map_.at("y") = ev.value;
               break;
             } case 5: {
-              accel_.z = ev.value;
+              accel_map_.at("z") = ev.value;
               break;
             }
           }
@@ -191,12 +196,12 @@ expected<void, error_code> WiiMote::rumble(int intensity, milis time, double fre
           int on_time  = 25 + (intensity * 75 / 100);           // ms on
           int off_time = 100 - on_time;                         // ms off
           while (steady_clock::now() < end) {
-            conn->playEffect(id);
+            auto c = conn->playEffect(id);
             sleep_for(milis(on_time));
-            conn->stopEffect(id);
+            c = conn->stopEffect(id);
             sleep_for(milis(off_time));
           }
-          conn->stopEffect(id);
+          auto c = conn->stopEffect(id);
         }).detach();
       } else {
         thread([conn = &conn, id = *id, time, intensity = min(intensity, 100), freq, offset]() {
@@ -210,12 +215,12 @@ expected<void, error_code> WiiMote::rumble(int intensity, milis time, double fre
             int on_time = 20 + (sine * intensity * 80 / 100);
             int off_time = 100 - on_time;
 
-            conn->playEffect(id);
+            auto c = conn->playEffect(id);
             sleep_for(milis(on_time));
-            conn->stopEffect(id);
+            c = conn->stopEffect(id);
             sleep_for(milis(off_time));
           }
-          conn->stopEffect(id);
+          auto c = conn->stopEffect(id);
         }).detach();
       }
     }
@@ -229,10 +234,10 @@ expected<void, error_code> WiiMote::animLed(milis time, milis delay) {
     sleep_for(milis(delay));
     auto end = time / 16;
     for (int i = 0; i <= 15 && !stop_leds_.load(); i++) {
-      setLedId(i);
+      auto l = setLedId(i);
       sleep_for(milis(end));
     }
-    if (!stop_leds_.load()) setLedId(ctrl_id_);
+    if (!stop_leds_.load()) auto l = setLedId(ctrl_id_);
   });
   return {};
 }
@@ -252,12 +257,12 @@ bool WiiMote::onLostFd(int fd) {
   return true;
 }
 
-const Buttons WiiMote::getButtons() const {
-  return btns_;
+const unordered_map<string, bool> WiiMote::getButtons() const {
+  return btns_map_;
 }
 
-const Accelerometer WiiMote::getAccel() const {
-  return accel_;
+const std::unordered_map<std::string, int16_t> WiiMote::getAccel() const {
+  return accel_map_;
 }
 
 const Gyroscope WiiMote::getGyro() const {

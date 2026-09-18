@@ -19,7 +19,7 @@ using milis = std::chrono::milliseconds;
 
 using namespace motionplusplus;
 
-ControllerManager::ControllerManager() : device_num_(0), scan_interval_(milis(250)), last_scan_(steady_clock::now()), new_controllers_(false) {
+ControllerManager::ControllerManager() : device_num_(0), scan_interval_(milis(500)), last_scan_(steady_clock::now()), new_controllers_(false) {
 
 }
 
@@ -45,9 +45,13 @@ expected<vector<pair<int, string>>, error_code> ControllerManager::scan() {
     if (knownHids.count(it->first)) {
       it_ctrls {
         if (ctrl.second->getHid() == it->first) {
+          size_t before = ctrl.second->getDeviceNumber();
           ctrl.second->addDevices(move(it->second));
-          ctrl.second->setConnected(false);
-          new_controllers_ = true;
+          size_t after = ctrl.second->getDeviceNumber();
+          if (after != before) {
+            ctrl.second->setConnected(false);
+            new_controllers_ = true;
+          }
           break;
         }
       }
@@ -84,16 +88,16 @@ expected<void, error_code> ControllerManager::connect() {
 expected<void, error_code> ControllerManager::update(milis timeout) {
   if (steady_clock::now() - last_scan_ >= scan_interval_) {
     last_scan_ = steady_clock::now();
-    auto input_devices = dm_.scan();
-    if (!input_devices) return unexpected(input_devices.error());
-    if (static_cast<int>(input_devices->size()) > device_num_) {
+    auto raw_devices = dm_.scan();
+    if (!raw_devices) return unexpected(raw_devices.error());
+    if (static_cast<int>(raw_devices->size()) != device_num_) {
       auto scn = scan();
       if (!scn) return unexpected(scn.error());
       if (new_controllers_) {
         auto cn = connect();
         if (!cn) return unexpected(cn.error());
       }
-      device_num_ = input_devices->size();
+      device_num_ = raw_devices->size();
     }
   }
 

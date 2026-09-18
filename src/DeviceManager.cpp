@@ -42,17 +42,19 @@ expected<vector<InputDevice>, error_code> DeviceManager::scan() {
 }
 
 expected<void, pair<error_code, string>> DeviceManager::populateMetadata(vector<InputDevice> &input_devices) {
+  vector<InputDevice> available;
+
   for(auto &in_d : input_devices) {
     int fd = open(in_d.path.string().c_str(), O_RDONLY);
 
-    if (fd < 0) return unexpected(make_pair(error_code(errno, generic_category()), in_d.path.string()));
+    if (fd < 0) continue;
 
     libevdev *dev = nullptr;
     int rc = libevdev_new_from_fd(fd, &dev);
 
     if (rc < 0) {
       close(fd);
-      return unexpected(make_pair(error_code(-rc, generic_category()), in_d.path.string()));
+      continue;
     }
 
     in_d.name = libevdev_get_name(dev);
@@ -65,21 +67,29 @@ expected<void, pair<error_code, string>> DeviceManager::populateMetadata(vector<
     in_d.phys = phys ? phys : "";
     in_d.uniq = uniq ? uniq : "";
 
-    string real_path = canonical("/sys/class" + in_d.path.string().substr(4));
+    error_code cec;
+    string real_path = canonical("/sys/class" + in_d.path.string().substr(4), cec).string();
+    if (cec) {
+      libevdev_free(dev);
+      close(fd);
+      continue;
+    }
 
     auto last = real_path.find("/input/");
     if (last == string::npos) last = real_path.find("/sound/");
-    if (last == string::npos) return unexpected(make_pair(DeviceManagerError::NoHIDFound, in_d.name));
+    if (last == string::npos) continue; //return unexpected(make_pair(DeviceManagerError::NoHIDFound, in_d.name));
 
     auto first = real_path.substr(0, last).rfind("/");
-    if (first == string::npos) return unexpected(make_pair(DeviceManagerError::NoHIDFound, in_d.name));
+    if (first == string::npos) continue; //return unexpected(make_pair(DeviceManagerError::NoHIDFound, in_d.name));
 
     in_d.hid = real_path.substr(first+1, last-(first+1));
 
     libevdev_free(dev);
     close(fd);
+    available.push_back(in_d);
   }
 
+  input_devices = std::move(available);
   return {};
 }
 

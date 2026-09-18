@@ -2,6 +2,7 @@
 
 #include "Controller.hpp"
 #include <vector>
+#include <array>
 #include <memory>
 #include <chrono>
 #include <utility>
@@ -11,32 +12,38 @@
 #include <cmath>
 #include <fstream>
 #include <atomic>
+#include <unordered_map>
 
 namespace motionplusplus {
+
+  const std::array<std::string, 11> BTNS = {"a", "b", "right", "left", "up", "down", "plus", "home", "minus", "one", "two"};
+  const std::array<std::string, 3> ACCEL = {"x", "y", "z"};
+  const std::array<std::string, 3> GYRO = {"roll", "pitch", "yaw"};
+
   struct Buttons {
-    bool a;
-    bool b;
-    bool right;
-    bool left;
-    bool up;
-    bool down;
-    bool plus;
-    bool home;
-    bool minus;
-    bool one;
-    bool two;
+    bool a = false;
+    bool b = false;
+    bool right = false;
+    bool left = false;
+    bool up = false;
+    bool down = false;
+    bool plus = false;
+    bool home = false;
+    bool minus = false;
+    bool one = false;
+    bool two = false;
   };
 
   struct Accelerometer {
-    int16_t x;
-    int16_t y;
-    int16_t z;
+    int16_t x = 0;
+    int16_t y = 0;
+    int16_t z = 0;
   };
 
   struct Gyroscope {
-    int16_t roll;
-    int16_t pitch;
-    int16_t yaw;
+    int16_t roll = 0;
+    int16_t pitch = 0;
+    int16_t yaw = 0;
   };
 
   struct Point {
@@ -81,9 +88,10 @@ namespace motionplusplus {
   public:
     static std::pair<std::map<int, std::unique_ptr<Controller>>, int> discover(std::shared_ptr<DeviceManager> dm, std::vector<int> &bussyIds, std::map<std::string, std::vector<std::unique_ptr<InputDevice>>> &grps);
 
-    WiiMote(WiiMote&& other);
     WiiMote(const WiiMote&) = delete;
     WiiMote& operator=(WiiMote&&) = delete;
+    WiiMote& operator=(const WiiMote&) = delete;
+    WiiMote(WiiMote&&) = delete;
     ~WiiMote();
 
     void update(int fd, input_event ev) override;
@@ -92,8 +100,8 @@ namespace motionplusplus {
 
     bool onLostFd(int fd) override;
 
-    const Buttons getButtons() const;
-    const Accelerometer getAccel() const;
+    const std::unordered_map<std::string, bool> getButtons() const;
+    const std::unordered_map<std::string, int16_t> getAccel() const;
     const Gyroscope getGyro() const;
     const Ir getIr() const;
     Leds getLeds();
@@ -107,6 +115,9 @@ namespace motionplusplus {
     Gyroscope gyro_;
     Ir ir_;
     Leds leds_;
+
+    std::unordered_map<std::string, bool> btns_map_;
+    std::unordered_map<std::string, int16_t> accel_map_;
 
     std::thread leds_thread_;
     std::atomic<bool> stop_leds_{false};

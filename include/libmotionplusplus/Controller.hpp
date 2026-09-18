@@ -40,6 +40,7 @@ namespace motionplusplus {
     std::string getType() const;
     virtual std::expected<int, std::error_code> getBatPer() const = 0;
     std::vector<int> getFds();
+    int getDeviceNumber() const;
 
     void setConnected(bool conn);
 
