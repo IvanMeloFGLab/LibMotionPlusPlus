@@ -47,10 +47,6 @@ WiiMote::WiiMote(shared_ptr<DeviceManager> dm, int ctrl_id, vector<std::unique_p
   auto a = animLed(milis(3000), milis(350));
 }
 
-WiiMote::WiiMote(WiiMote&& other) : Controller(move(other)) {
-
-}
-
 WiiMote::~WiiMote() {
   stop_leds_ = true;
   if (leds_thread_.joinable()) leds_thread_.join();

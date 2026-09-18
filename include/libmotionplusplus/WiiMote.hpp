@@ -88,9 +88,10 @@ namespace motionplusplus {
   public:
     static std::pair<std::map<int, std::unique_ptr<Controller>>, int> discover(std::shared_ptr<DeviceManager> dm, std::vector<int> &bussyIds, std::map<std::string, std::vector<std::unique_ptr<InputDevice>>> &grps);
 
-    WiiMote(WiiMote&& other);
     WiiMote(const WiiMote&) = delete;
     WiiMote& operator=(WiiMote&&) = delete;
+    WiiMote& operator=(const WiiMote&) = delete;
+    WiiMote(WiiMote&&) = delete;
     ~WiiMote();
 
     void update(int fd, input_event ev) override;
