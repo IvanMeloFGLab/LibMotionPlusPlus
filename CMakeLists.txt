@@ -11,7 +11,7 @@ endif()
 
 option(BUILD_SHARED_LIBS "Build shared instead of static libs" OFF)
 option(MOTIONPLUSPLUS_BUILD_EXAMPLES "Build example programs" ON)
-option(INSTALL_UDEV_RULES "Install udev rule for controllers device access" OFF)
+option(MOTIONPLUSPLUS_INSTALL_UDEV_RULES "Install udev rule for controllers device access" OFF)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBEVDEV REQUIRED IMPORTED_TARGET libevdev)
